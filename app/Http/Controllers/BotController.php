@@ -95,7 +95,7 @@ class BotController extends Controller
                         $response = $this->lineBot->getMessageContent($msgId);
 
                         if ($response->isSucceeded()) {
-                            Storage::put('public/test.jpg', $response);
+
                         }
                     }
 
