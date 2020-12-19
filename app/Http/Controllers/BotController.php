@@ -42,7 +42,7 @@ class BotController extends Controller
             foreach ($events as $event) {
                 $this->userId = $event->getUserId();
                 $replyToken = $event->getReplyToken();
-                Log::info(json_encode($event));
+                $this->getUserProfile();
 
                 //訊息的話
                 if ($event instanceof MessageEvent) {
@@ -51,7 +51,7 @@ class BotController extends Controller
 
                     //文字
                     if ($msgType == 'text') {
-
+                        $text = $event->getText();
                     }
                 }
 
@@ -72,5 +72,65 @@ class BotController extends Controller
             return;
         }
         return;
+    }
+
+    public function getUserProfile($event)
+    {
+        //base
+        if ($event instanceof BaseEvent) {
+            //user
+            if ($event->isUserEvent()) {
+                $this->userId = $event->getUserId();
+
+                if (!is_null($this->userId)) {
+                    $response = $this->lineBot->getProfile($this->userId);
+
+                    if ($response->isSucceeded()) {
+                        $profile = $response->getJSONDecodedBody();
+                        $this->displayName = $profile['displayName'];
+                        Log::info($this->displayName);
+                    } else {
+                        Log::debug($response->getRawBody());
+                    }
+                }
+            }
+
+            //group
+            if ($event->isGroupEvent()) {
+                $this->userId = $event->getUserId();
+                $this->groupId = $event->getGroupId();
+
+                if (!is_null($this->userId) && !is_null($this->groupId)) {
+                    $response = $this->lineBot->getGroupMemberProfile($this->groupId, $this->userId);
+
+                    if ($response->isSucceeded()) {
+                        $profile = $response->getJSONDecodedBody();
+                        $this->displayName = $profile['displayName'];
+                        Log::info($this->displayName);
+                    } else {
+                        Log::debug($response->getRawBody());
+                    }
+                }
+            }
+
+
+            //room
+            if ($event->isRoomEvent()) {
+                $this->userId = $event->getUserId();
+                $this->roomId = $event->getRoomId();
+
+                if (!is_null($this->userId) && !is_null($this->roomId)) {
+                    $response = $this->lineBot->getRoomMemberProfile($this->roomId, $this->userId);
+
+                    if ($response->isSucceeded()) {
+                        $profile = $response->getJSONDecodedBody();
+                        $this->displayName = $profile['displayName'];
+                        Log::info($this->displayName);
+                    } else {
+                        Log::debug($response->getRawBody());
+                    }
+                }
+            }
+        }
     }
 }
