@@ -22,7 +22,7 @@ class BotController extends Controller
         $this->lineBot = new LINEBot($httpClient, ['channelSecret' => $this->lineChannelSecret]);
     }
 
-    public function reply()
+    public function reply(Request $request)
     {
         $signature = $request->headers->get(HTTPHeader::LINE_SIGNATURE);
 
