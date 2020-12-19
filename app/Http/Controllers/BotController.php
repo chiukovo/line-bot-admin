@@ -41,9 +41,10 @@ class BotController extends Controller
             $events = $this->lineBot->parseEventRequest($request->getContent(), $signature);
 
             foreach ($events as $event) {
-                $this->userId = $event->getUserId();
                 $replyToken = $event->getReplyToken();
-                $this->getUserProfile($event);
+
+                $userInfo = $this->getUserProfile($event);
+                Log::info(json_encode($userInfo));
 
                 //訊息的話
                 if ($event instanceof MessageEvent) {
@@ -77,19 +78,24 @@ class BotController extends Controller
 
     public function getUserProfile($event)
     {
+        $return = [
+            'userId' => '',
+            'groupId' => '',
+            'roomId' => '',
+            'displayName' => '',
+        ];
         //base
         if ($event instanceof BaseEvent) {
+            $return['userId'] = $event->getUserId();
+
             //user
             if ($event->isUserEvent()) {
-                $this->userId = $event->getUserId();
-
-                if (!is_null($this->userId)) {
-                    $response = $this->lineBot->getProfile($this->userId);
+                if (!is_null($return['userId'])) {
+                    $response = $this->lineBot->getProfile($return['userId']);
 
                     if ($response->isSucceeded()) {
                         $profile = $response->getJSONDecodedBody();
-                        $this->displayName = $profile['displayName'];
-                        Log::info($this->displayName);
+                        $return['displayName'] = $profile['displayName'];  
                     } else {
                         Log::debug($response->getRawBody());
                     }
@@ -98,16 +104,14 @@ class BotController extends Controller
 
             //group
             if ($event->isGroupEvent()) {
-                $this->userId = $event->getUserId();
                 $this->groupId = $event->getGroupId();
 
-                if (!is_null($this->userId) && !is_null($this->groupId)) {
-                    $response = $this->lineBot->getGroupMemberProfile($this->groupId, $this->userId);
+                if (!is_null($return['userId']) && !is_null($this->groupId)) {
+                    $response = $this->lineBot->getGroupMemberProfile($this->groupId, $return['userId']);
 
                     if ($response->isSucceeded()) {
                         $profile = $response->getJSONDecodedBody();
-                        $this->displayName = $profile['displayName'];
-                        Log::info($this->displayName);
+                        $this->displayName = $profile['displayName'];  
                     } else {
                         Log::debug($response->getRawBody());
                     }
@@ -116,16 +120,14 @@ class BotController extends Controller
 
             //room
             if ($event->isRoomEvent()) {
-                $this->userId = $event->getUserId();
                 $this->roomId = $event->getRoomId();
 
-                if (!is_null($this->userId) && !is_null($this->roomId)) {
-                    $response = $this->lineBot->getRoomMemberProfile($this->roomId, $this->userId);
+                if (!is_null($return['userId']) && !is_null($this->roomId)) {
+                    $response = $this->lineBot->getRoomMemberProfile($this->roomId, $return['userId']);
 
                     if ($response->isSucceeded()) {
                         $profile = $response->getJSONDecodedBody();
-                        $this->displayName = $profile['displayName'];
-                        Log::info($this->displayName);
+                        $this->displayName = $profile['displayName'];  
                     } else {
                         Log::debug($response->getRawBody());
                     }
