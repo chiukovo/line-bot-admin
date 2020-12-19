@@ -112,7 +112,7 @@ class BotController extends Controller
 
                     if ($response->isSucceeded()) {
                         $profile = $response->getJSONDecodedBody();
-                        $this->displayName = $profile['displayName'];  
+                        $return['displayName'] = $profile['displayName'];  
                     } else {
                         Log::debug($response->getRawBody());
                     }
@@ -128,7 +128,7 @@ class BotController extends Controller
 
                     if ($response->isSucceeded()) {
                         $profile = $response->getJSONDecodedBody();
-                        $this->displayName = $profile['displayName'];  
+                        $return['displayName'] = $profile['displayName'];  
                     } else {
                         Log::debug($response->getRawBody());
                     }
