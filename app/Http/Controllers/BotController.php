@@ -27,6 +27,8 @@ class BotController extends Controller
 
     public function reply(Request $request)
     {
+        $date = date('Y-m-d');
+        $dateTime = date('Y-m-d H:i:s');
         $signature = $request->headers->get(HTTPHeader::LINE_SIGNATURE);
 
         if ($signature == '') {
@@ -81,23 +83,31 @@ class BotController extends Controller
                 if ($event instanceof MessageEvent) {
                     $msgId = $event->getMessageId();
                     $msgType = $event->getMessageType();
+                    $type = 0;
+                    $pictureUrl = '';
 
                     //文字
                     if ($msgType == 'text') {
                         $text = $event->getText();
                     }
-                }
 
-                if ($event instanceof JoinEvent) {
+                    //圖片
+                    if ($msgType == 'image') {
+                        $type = 1;
+                        $content = $this->lineBot->getMessageContent($msgId);
+                        Log::info($content);
+                    }
 
-                }
-
-                if ($event instanceof LeaveEvent) {
-                    
-                }
-
-                if ($event instanceof MemberJoinEvent) {
-
+                    //insert
+                    DB::table('line_user_message')->insert([
+                        'date' => $date,
+                        'group_id' => $groupId,
+                        'user_id' => $userId,
+                        'type' => $type,
+                        'msg' => $text,
+                        'pictureUrl' => $pictureUrl,
+                        'created_at' => $dateTime
+                    ]);
                 }
             }
         } catch (Exception $e) {
