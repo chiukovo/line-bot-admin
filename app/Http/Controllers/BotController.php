@@ -84,34 +84,35 @@ class BotController extends Controller
                     $text = '';
                     $pictureUrl = '';
 
-                    //文字
-                    if ($msgType == 'text') {
-                        $text = $event->getText();
-                    }
-
-                    //圖片
-                    if ($msgType == 'image') {
-                        $type = 1;
-                        $response = $this->lineBot->getMessageContent($msgId);
-
-                        if ($response->isSucceeded()) {
-                            $content = $response->getRawBody();
-
-                            $pictureUrl = $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '.jpg';
-                            Storage::put('public/' . $pictureUrl, $response->getRawBody());
+                    if ($msgType == 'text' || $msgType == 'image') {
+                        if ($msgType == 'text') {
+                            $text = $event->getText();
                         }
-                    }
 
-                    //insert
-                    DB::table('line_user_message')->insert([
-                        'date' => $date,
-                        'group_id' => $groupId,
-                        'user_id' => $userId,
-                        'type' => $type,
-                        'msg' => $text,
-                        'picture_url' => $pictureUrl == '' ? '' : 'storage' . '/' . $pictureUrl,
-                        'created_at' => $dateTime
-                    ]);
+                        //圖片
+                        if ($msgType == 'image') {
+                            $type = 1;
+                            $response = $this->lineBot->getMessageContent($msgId);
+
+                            if ($response->isSucceeded()) {
+                                $content = $response->getRawBody();
+
+                                $pictureUrl = $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '.jpg';
+                                Storage::put('public/' . $pictureUrl, $response->getRawBody());
+                            }
+                        }
+
+                        //insert
+                        DB::table('line_user_message')->insert([
+                            'date' => $date,
+                            'group_id' => $groupId,
+                            'user_id' => $userId,
+                            'type' => $type,
+                            'msg' => $text,
+                            'picture_url' => $pictureUrl == '' ? '' : 'storage' . '/' . $pictureUrl,
+                            'created_at' => $dateTime
+                        ]);
+                    }
                 }
             }
         } catch (Exception $e) {
