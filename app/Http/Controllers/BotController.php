@@ -122,6 +122,7 @@ class BotController extends Controller
                 'user_id' => $userId,
                 'name' => $displayName,
                 'picture_url' => $userPictureUrl,
+                'created_at' => date('Y-m-d H:i:s')
             ]);
         } else {
             Log::debug($response->getRawBody());
@@ -142,6 +143,7 @@ class BotController extends Controller
                 'group_id' => $groupId,
                 'name' => $groupName,
                 'picture_url' => $groupPictureUrl,
+                'created_at' => date('Y-m-d H:i:s')
             ]);
         } else {
             Log::debug($groupSummary->getRawBody());
