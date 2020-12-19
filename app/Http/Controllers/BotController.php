@@ -102,7 +102,7 @@ class BotController extends Controller
                         'user_id' => $userId,
                         'type' => $type,
                         'msg' => $text,
-                        'pictureUrl' => $pictureUrl,
+                        'picture_url' => $pictureUrl,
                         'created_at' => $dateTime
                     ]);
                 }
