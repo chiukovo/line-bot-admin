@@ -42,9 +42,14 @@ class BotController extends Controller
 
             foreach ($events as $event) {
                 $replyToken = $event->getReplyToken();
-
                 $userInfo = $this->getUserProfile($event);
-                Log::info(json_encode($userInfo, JSON_UNESCAPED_UNICODE));
+
+                //不是群組的話就跳出
+                if ($userInfo['groupId'] == '') {
+                    continue;
+                }
+
+                //檢查群組是否有新增過
 
                 //訊息的話
                 if ($event instanceof MessageEvent) {
@@ -83,6 +88,7 @@ class BotController extends Controller
             'groupId' => '',
             'roomId' => '',
             'displayName' => '',
+            'groupName' => '',
         ];
 
         //base
@@ -113,6 +119,15 @@ class BotController extends Controller
                     if ($response->isSucceeded()) {
                         $profile = $response->getJSONDecodedBody();
                         $return['displayName'] = $profile['displayName'];  
+                    } else {
+                        Log::debug($response->getRawBody());
+                    }
+
+                    $groupSummary = $this->lineBot->getGroupSummary($return['groupId']);
+
+                    if ($response->isSucceeded()) {
+                        $profile = $response->getJSONDecodedBody();
+                        $return['groupName'] = $profile['groupName'];
                     } else {
                         Log::debug($response->getRawBody());
                     }
