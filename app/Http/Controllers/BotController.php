@@ -42,14 +42,40 @@ class BotController extends Controller
 
             foreach ($events as $event) {
                 $replyToken = $event->getReplyToken();
-                $userInfo = $this->getUserProfile($event);
-
-                //不是群組的話就跳出
-                if ($userInfo['groupId'] == '') {
-                    continue;
+                
+                if ($event instanceof BaseEvent) {
+                    if (!$event->isGroupEvent()) {
+                        continue;
+                    }
                 }
 
                 //檢查群組是否有新增過
+                $groupId = $event->getGroupId();
+                $userId = $event->getUserId();
+
+                $group = DB::table('line_group')
+                    ->where('group_id', $groupId)
+                    ->get('id')
+                    ->first();
+
+                if (is_null($group)) {
+                    //create group info
+                    $this->getGroupProfile($groupId);
+                }
+
+
+                $groupUser = DB::table('line_group_user')
+                    ->where('group_id', $groupId)
+                    ->where('user_id', $userId)
+                    ->get('id')
+                    ->first();
+
+                if (is_null($groupUser)) {
+                    //create group info
+                    $this->getUserProfile($groupId, $userId);
+                }
+
+                $userInfo = $this->getUserProfile($event);
 
                 //訊息的話
                 if ($event instanceof MessageEvent) {
@@ -81,79 +107,44 @@ class BotController extends Controller
         return;
     }
 
-    public function getUserProfile($event)
+    public function getUserProfile($groupId, $userId)
     {
-        $return = [
-            'userId' => '',
-            'groupId' => '',
-            'roomId' => '',
-            'displayName' => '',
-            'groupName' => '',
-            'pictureUrl' => '',
-        ];
+        $response = $this->lineBot->getGroupMemberProfile($groupId, $userId);
 
-        //base
-        if ($event instanceof BaseEvent) {
-            $return['userId'] = $event->getUserId();
+        if ($response->isSucceeded()) {
+            $profile = $response->getJSONDecodedBody();
+            $displayName = $profile['displayName'];
+            $userPictureUrl = $profile['pictureUrl'];
 
-            //user
-            if ($event->isUserEvent()) {
-                if (!is_null($return['userId'])) {
-                    $response = $this->lineBot->getProfile($return['userId']);
-
-                    if ($response->isSucceeded()) {
-                        $profile = $response->getJSONDecodedBody();
-                        $return['displayName'] = $profile['displayName'];  
-                    } else {
-                        Log::debug($response->getRawBody());
-                    }
-                }
-            }
-
-            //group
-            if ($event->isGroupEvent()) {
-                $return['groupId'] = $event->getGroupId();
-
-                if (!is_null($return['userId']) && !is_null($return['groupId'])) {
-                    $response = $this->lineBot->getGroupMemberProfile($return['groupId'], $return['userId']);
-
-                    if ($response->isSucceeded()) {
-                        $profile = $response->getJSONDecodedBody();
-                        $return['displayName'] = $profile['displayName'];
-                        $return['pictureUrl'] = $profile['pictureUrl'];
-                    } else {
-                        Log::debug($response->getRawBody());
-                    }
-
-                    $groupSummary = $this->lineBot->getGroupSummary($return['groupId']);
-
-                    if ($groupSummary->isSucceeded()) {
-                        $profile = $groupSummary->getJSONDecodedBody();
-                        $return['groupName'] = $profile['groupName'];
-                        Log::debug($profile);
-                    } else {
-                        Log::debug($groupSummary->getRawBody());
-                    }
-                }
-            }
-
-            //room
-            if ($event->isRoomEvent()) {
-                $return['roomId'] = $event->getRoomId();
-
-                if (!is_null($return['userId']) && !is_null($return['roomId'])) {
-                    $response = $this->lineBot->getRoomMemberProfile($return['roomId'], $return['userId']);
-
-                    if ($response->isSucceeded()) {
-                        $profile = $response->getJSONDecodedBody();
-                        $return['displayName'] = $profile['displayName'];  
-                    } else {
-                        Log::debug($response->getRawBody());
-                    }
-                }
-            }
+            //insert
+            DB::table('line_group_user')->insert([
+                'group_id' => $groupId,
+                'userId' => $userId,
+                'name' => $displayName,
+                'picture_url' => $userPictureUrl,
+            ]);
+        } else {
+            Log::debug($response->getRawBody());
         }
+    }
 
-        return $return;
+    public function getGroupProfile($groupId)
+    {
+        $groupSummary = $this->lineBot->getGroupSummary($groupId);
+
+        if ($groupSummary->isSucceeded()) {
+            $profile = $groupSummary->getJSONDecodedBody();
+            $groupName = $profile['groupName'];
+            $groupPictureUrl = $profile['pictureUrl'];
+
+            //insert
+            DB::table('line_group')->insert([
+                'group_id' => $groupId,
+                'name' => $groupName,
+                'picture_url' => $groupPictureUrl,
+            ]);
+        } else {
+            Log::debug($groupSummary->getRawBody());
+        }
     }
 }
