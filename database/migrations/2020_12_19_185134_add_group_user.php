@@ -16,8 +16,8 @@ class AddGroupUser extends Migration
         Schema::create('line_group_user', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('group_id');
-            $table->integer('user_id');
+            $table->string('group_id');
+            $table->string('user_id');
             $table->string('picture_url');
             $table->index(['group_id', 'user_id']);
             $table->timestamps();

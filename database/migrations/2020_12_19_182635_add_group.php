@@ -16,7 +16,7 @@ class AddGroup extends Migration
         Schema::create('line_group', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('group_id');
+            $table->string('group_id');
             $table->string('picture_url');
             $table->index(['group_id']);
             $table->timestamps();
