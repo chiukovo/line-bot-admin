@@ -119,7 +119,7 @@ class BotController extends Controller
             //insert
             DB::table('line_group_user')->insert([
                 'group_id' => $groupId,
-                'userId' => $userId,
+                'user_id' => $userId,
                 'name' => $displayName,
                 'picture_url' => $userPictureUrl,
             ]);
