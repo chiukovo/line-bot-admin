@@ -109,7 +109,7 @@ class BotController extends Controller
                         'user_id' => $userId,
                         'type' => $type,
                         'msg' => $text,
-                        'picture_url' => 'storage' . '/' . $pictureUrl,
+                        'picture_url' => $pictureUrl == '' ? '' : 'storage' . '/' . $pictureUrl,
                         'created_at' => $dateTime
                     ]);
                 }
