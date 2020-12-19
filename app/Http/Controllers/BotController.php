@@ -44,7 +44,7 @@ class BotController extends Controller
                 $replyToken = $event->getReplyToken();
 
                 $userInfo = $this->getUserProfile($event);
-                Log::info(json_encode($userInfo));
+                Log::info(json_encode($userInfo, JSON_UNESCAPED_UNICODE));
 
                 //訊息的話
                 if ($event instanceof MessageEvent) {
