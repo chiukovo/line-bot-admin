@@ -42,7 +42,7 @@ class BotController extends Controller
             foreach ($events as $event) {
                 $this->userId = $event->getUserId();
                 $replyToken = $event->getReplyToken();
-                $this->getUserProfile();
+                $this->getUserProfile($event);
 
                 //訊息的話
                 if ($event instanceof MessageEvent) {
