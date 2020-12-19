@@ -65,7 +65,6 @@ class BotController extends Controller
                     $this->getGroupProfile($groupId);
                 }
 
-
                 $groupUser = DB::table('line_group_user')
                     ->where('group_id', $groupId)
                     ->where('user_id', $userId)
@@ -76,8 +75,6 @@ class BotController extends Controller
                     //create group info
                     $this->getUserProfile($groupId, $userId);
                 }
-
-                $userInfo = $this->getUserProfile($event);
 
                 //訊息的話
                 if ($event instanceof MessageEvent) {
