@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use LINE\LINEBot;
+use LINE\LINEBot\Constant\HTTPHeader;
 use LINE\LINEBot\Event\MessageEvent;
 use LINE\LINEBot\Event\JoinEvent;
 use LINE\LINEBot\Event\LeaveEvent;
