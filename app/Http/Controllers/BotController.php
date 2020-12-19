@@ -105,10 +105,10 @@ class BotController extends Controller
 
             //group
             if ($event->isGroupEvent()) {
-                $this->groupId = $event->getGroupId();
+                $return['groupId'] = $event->getGroupId();
 
-                if (!is_null($return['userId']) && !is_null($this->groupId)) {
-                    $response = $this->lineBot->getGroupMemberProfile($this->groupId, $return['userId']);
+                if (!is_null($return['userId']) && !is_null($return['groupId'])) {
+                    $response = $this->lineBot->getGroupMemberProfile($return['groupId'], $return['userId']);
 
                     if ($response->isSucceeded()) {
                         $profile = $response->getJSONDecodedBody();
@@ -121,10 +121,10 @@ class BotController extends Controller
 
             //room
             if ($event->isRoomEvent()) {
-                $this->roomId = $event->getRoomId();
+                $return['roomId'] = $event->getRoomId();
 
-                if (!is_null($return['userId']) && !is_null($this->roomId)) {
-                    $response = $this->lineBot->getRoomMemberProfile($this->roomId, $return['userId']);
+                if (!is_null($return['userId']) && !is_null($return['roomId'])) {
+                    $response = $this->lineBot->getRoomMemberProfile($return['roomId'], $return['userId']);
 
                     if ($response->isSucceeded()) {
                         $profile = $response->getJSONDecodedBody();
