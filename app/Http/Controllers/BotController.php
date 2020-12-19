@@ -107,7 +107,28 @@ class BotController extends Controller
         return;
     }
 
-    public function getUserProfile($groupId, $userId)
+    public function updateGroupUserInfo()
+    {
+        $groups = DB::table('line_group')
+            ->get('group_id')
+            ->toArray();
+
+        foreach ($groups as $group) {
+            $this->getGroupProfile($group->group_id, true);
+        }
+
+        $groupUsers = DB::table('line_group_user')
+            ->get(['group_id', 'user_id'])
+            ->toArray();
+
+        foreach ($groupUsers as $users) {
+            $this->getUserProfile($users->group_id, $users->user_id, true);
+        }
+
+        echo 'done';
+    }
+
+    public function getUserProfile($groupId, $userId, $updated = false)
     {
         $response = $this->lineBot->getGroupMemberProfile($groupId, $userId);
 
@@ -116,20 +137,34 @@ class BotController extends Controller
             $displayName = $profile['displayName'];
             $userPictureUrl = $profile['pictureUrl'];
 
-            //insert
-            DB::table('line_group_user')->insert([
-                'group_id' => $groupId,
-                'user_id' => $userId,
-                'name' => $displayName,
-                'picture_url' => $userPictureUrl,
-                'created_at' => date('Y-m-d H:i:s')
-            ]);
+            if ($updated) {
+                //insert
+                DB::table('line_group_user')
+                    ->where('group_id', $groupId)
+                    ->where('user_id', $userId)
+                    ->update([
+                        'name' => $displayName,
+                        'picture_url' => $userPictureUrl,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+            } else {
+                //insert
+                DB::table('line_group_user')->insert([
+                    'group_id' => $groupId,
+                    'user_id' => $userId,
+                    'name' => $displayName,
+                    'picture_url' => $userPictureUrl,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+
+
         } else {
             Log::debug($response->getRawBody());
         }
     }
 
-    public function getGroupProfile($groupId)
+    public function getGroupProfile($groupId, $updated = false)
     {
         $groupSummary = $this->lineBot->getGroupSummary($groupId);
 
@@ -138,13 +173,26 @@ class BotController extends Controller
             $groupName = $profile['groupName'];
             $groupPictureUrl = $profile['pictureUrl'];
 
-            //insert
-            DB::table('line_group')->insert([
-                'group_id' => $groupId,
-                'name' => $groupName,
-                'picture_url' => $groupPictureUrl,
-                'created_at' => date('Y-m-d H:i:s')
-            ]);
+            if ($updated) {
+                //insert
+                DB::table('line_group')
+                    ->where('group_id', $groupId)
+                    ->update([
+                        'name' => $groupName,
+                        'picture_url' => $groupPictureUrl,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+
+            } else {
+                //insert
+                DB::table('line_group')->insert([
+                    'group_id' => $groupId,
+                    'name' => $groupName,
+                    'picture_url' => $groupPictureUrl,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            }
+
         } else {
             Log::debug($groupSummary->getRawBody());
         }

@@ -18,6 +18,7 @@ Route::post('admin/login', 'App\Http\Controllers\AdminController@doLogin');
 
 //for bot
 Route::any('bot/reply', 'App\Http\Controllers\BotController@reply');
+Route::get('updateGroupUserInfo', 'App\Http\Controllers\BotController@updateGroupUserInfo');
 
 //login
 Route::group(['middleware' => ['auth']], function () {
