@@ -6,6 +6,7 @@ use LINE\LINEBot;
 use LINE\LINEBot\Constant\HTTPHeader;
 use LINE\LINEBot\Event\MessageEvent;
 use LINE\LINEBot\Event\JoinEvent;
+use LINE\LINEBot\Event\BaseEvent;
 use LINE\LINEBot\SignatureValidator;
 use LINE\LINEBot\Event\LeaveEvent;
 use LINE\LINEBot\Event\MemberJoinEvent;
@@ -112,7 +113,6 @@ class BotController extends Controller
                     }
                 }
             }
-
 
             //room
             if ($event->isRoomEvent()) {
