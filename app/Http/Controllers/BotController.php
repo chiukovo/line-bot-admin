@@ -95,7 +95,10 @@ class BotController extends Controller
                         $response = $this->lineBot->getMessageContent($msgId);
 
                         if ($response->isSucceeded()) {
+                            $content = $response->getRawBody();
 
+                            $path = 'public/' . $date . '/' . $groupId . '/' . $userId . '/' . $dateTime . '.jpg';
+                            Storage::put($path, $response->getRawBody());
                         }
                     }
 
