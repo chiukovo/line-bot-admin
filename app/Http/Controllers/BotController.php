@@ -98,15 +98,13 @@ class BotController extends Controller
                             if ($response->isSucceeded()) {
                                 $content = $response->getRawBody();
 
-                                //壓縮
-                                $img = Image::make($content);
-                                // 宽度为400,高度自动调整，不会变形
-                                $img->resize(400, null, function ($constraint) {
+                                $imgContent = Image::make($content)->resize(400, null, function ($constraint) {
                                     $constraint->aspectRatio();
-                                });
+                                })->encode('jpg', 80);
 
                                 $pictureUrl = $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '.jpg';
-                                Storage::put('public/' . $pictureUrl, $img);
+                                
+                                Storage::put('public/' . $pictureUrl, $imgContent);
                             }
                         }
 
