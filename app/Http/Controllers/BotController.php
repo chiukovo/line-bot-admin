@@ -97,7 +97,7 @@ class BotController extends Controller
                         if ($response->isSucceeded()) {
                             $content = $response->getRawBody();
 
-                            $pictureUrl = $groupId . '_'. $userId . '_' . strtotime($dateTime) . '.jpg';
+                            $pictureUrl = $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '.jpg';
                             Storage::put('public/' . $pictureUrl, $response->getRawBody());
                         }
                     }
@@ -109,7 +109,7 @@ class BotController extends Controller
                         'user_id' => $userId,
                         'type' => $type,
                         'msg' => $text,
-                        'picture_url' => $pictureUrl,
+                        'picture_url' => 'storage' . '/' . $pictureUrl,
                         'created_at' => $dateTime
                     ]);
                 }
