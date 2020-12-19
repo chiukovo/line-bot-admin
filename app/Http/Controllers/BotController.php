@@ -84,6 +84,7 @@ class BotController extends Controller
             'roomId' => '',
             'displayName' => '',
         ];
+
         //base
         if ($event instanceof BaseEvent) {
             $return['userId'] = $event->getUserId();
@@ -134,5 +135,7 @@ class BotController extends Controller
                 }
             }
         }
+
+        return $return;
     }
 }
