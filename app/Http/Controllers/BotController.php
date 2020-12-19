@@ -6,5 +6,10 @@ use Illuminate\Http\Request;
 
 class BotController extends Controller
 {
-    //
+    public function reply()
+    {
+        return response()->json([
+            'status' => 'success'
+        ]);
+    }
 }

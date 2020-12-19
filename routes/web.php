@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('admin/login', 'App\Http\Controllers\AdminController@login')->name('adminLogin');
 Route::post('admin/login', 'App\Http\Controllers\AdminController@doLogin');
 
+//for bot
+Route::any('bot/reply', 'App\Http\Controllers\BotController@reply');
+
 //login
 Route::group(['middleware' => ['auth']], function () {
     Route::get('admin', 'App\Http\Controllers\AdminController@index');
