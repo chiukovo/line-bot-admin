@@ -81,6 +81,7 @@ class BotController extends Controller
                     $msgId = $event->getMessageId();
                     $msgType = $event->getMessageType();
                     $type = 0;
+                    $text = '';
                     $pictureUrl = '';
 
                     //文字
