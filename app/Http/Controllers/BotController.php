@@ -97,7 +97,7 @@ class BotController extends Controller
                         if ($response->isSucceeded()) {
                             $content = $response->getRawBody();
 
-                            $pictureUrl = 'public/' . $date . '/' . $groupId . '/' . $userId . '/' . $dateTime . '.jpg';
+                            $pictureUrl = 'public/' . $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '.jpg';
                             Storage::put($pictureUrl, $response->getRawBody());
                         }
                     }
