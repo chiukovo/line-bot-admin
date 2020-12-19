@@ -89,6 +89,7 @@ class BotController extends Controller
             'roomId' => '',
             'displayName' => '',
             'groupName' => '',
+            'pictureUrl' => '',
         ];
 
         //base
@@ -118,18 +119,20 @@ class BotController extends Controller
 
                     if ($response->isSucceeded()) {
                         $profile = $response->getJSONDecodedBody();
-                        $return['displayName'] = $profile['displayName'];  
+                        $return['displayName'] = $profile['displayName'];
+                        $return['pictureUrl'] = $profile['pictureUrl'];
                     } else {
                         Log::debug($response->getRawBody());
                     }
 
                     $groupSummary = $this->lineBot->getGroupSummary($return['groupId']);
 
-                    if ($response->isSucceeded()) {
-                        $profile = $response->getJSONDecodedBody();
+                    if ($groupSummary->isSucceeded()) {
+                        $profile = $groupSummary->getJSONDecodedBody();
                         $return['groupName'] = $profile['groupName'];
+                        Log::debug($profile);
                     } else {
-                        Log::debug($response->getRawBody());
+                        Log::debug($groupSummary->getRawBody());
                     }
                 }
             }
