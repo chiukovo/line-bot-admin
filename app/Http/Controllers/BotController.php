@@ -11,6 +11,7 @@ use LINE\LINEBot\Event\LeaveEvent;
 use LINE\LINEBot\Event\MemberJoinEvent;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 use Illuminate\Http\Request;
+use Log, Storage, DB;
 
 class BotController extends Controller
 {
@@ -49,7 +50,7 @@ class BotController extends Controller
                     $msgType = $event->getMessageType();
 
                     //文字
-                    if ($messageType == 'text') {
+                    if ($msgType == 'text') {
 
                     }
                 }
