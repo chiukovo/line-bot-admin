@@ -12,6 +12,7 @@ use LINE\LINEBot\Event\LeaveEvent;
 use LINE\LINEBot\Event\MemberJoinEvent;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 use Illuminate\Http\Request;
+use Intervention\Image\ImageManagerStatic as Image;
 use Log, Storage, DB;
 
 class BotController extends Controller
@@ -97,8 +98,15 @@ class BotController extends Controller
                             if ($response->isSucceeded()) {
                                 $content = $response->getRawBody();
 
+                                //壓縮
+                                $img = Image::make($content);
+                                // 宽度为400,高度自动调整，不会变形
+                                $img->resize(400, null, function ($constraint) {
+                                    $constraint->aspectRatio();
+                                });
+
                                 $pictureUrl = $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '.jpg';
-                                Storage::put('public/' . $pictureUrl, $response->getRawBody());
+                                Storage::put('public/' . $pictureUrl, $img);
                             }
                         }
 
