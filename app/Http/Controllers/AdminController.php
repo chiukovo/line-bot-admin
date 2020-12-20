@@ -283,10 +283,6 @@ class AdminController extends Controller
             ->get()
             ->toArray();
 
-        if (empty($groupUserMessage)) {
-            return redirect('/admin/bot/group/list');
-        }
-
         return view('admin/group/user/message', [
             'groupUserMessage' => $groupUserMessage,
             'groupId' => $groupId,
