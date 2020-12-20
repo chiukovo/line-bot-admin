@@ -204,225 +204,99 @@ class AdminController extends Controller
             ]);
         }
     }
-    
-    public function webUserList()
+
+    public function groupList()
     {
         $data = Request::input();
 
-        $account = $data['account'] ?? '';
-        $code = $data['code'] ?? '';
-        $phone = $data['phone'] ?? '';
+        $name = $data['name'] ?? '';
 
         $filters = [];
 
-        if ($code != '') {
-            $filters['code'] = $code;
+        if ($name != '') {
+            $filters['name'] = $name;
         }
 
-        if ($account != '') {
-            $filters['account'] = $account;
-        }
-
-        if ($phone != '') {
-            $filters['phone'] = $phone;
-        }
-
-        $webUserData = DB::table('web_users');
+        $groupList = DB::table('line_group');
 
         if (!empty($filters)) {
-            $webUserData->where($filters);
+            $groupList->where($filters);
         }
 
-        $webUserData = $webUserData
-            ->get([
-                'account',
-                'phone',
-                'email',
-                'name',
-                'nickname',
-                'code',
-                'created_at',
-            ])
+        $groupList = $groupList
+            ->get()
             ->toArray();
 
-        return view('admin/webUser/list', [
-            'webUserData' => $webUserData,
-            'code' => $code,
-            'phone' => $phone,
-            'account' => $account,
-        ]);
-    }
-
-
-    public function webUserEdit()
-    {
-        $routeName = Request::route()->getName();
-
-        $isEdit = false;
-        $id = Request::input('id', '');
-        $account = '';
-        $name = '';
-        $nickname = '';
-        $email = '';
-        $code = '';
-        $phone = '';
-
-        if ($routeName == 'webUserEdit') {
-            $isEdit = true;
-        }
-
-        if ($id != '') {
-            $webUser = DB::table('web_users')
-                ->where('id', $id)
-                ->get()
-                ->first();
-
-            if (is_null($webUser)) {
-                return redirect('/admin/web/user/list');
-            }
-
-            $account = $webUser->account;
-            $name = $webUser->name;
-            $nickname = $webUser->nickname;
-            $email = $webUser->email;
-            $code = $webUser->code;
-            $phone = $webUser->phone;
-        }
-
-        return view('admin/webUser/edit', [
-            'isEdit' => $isEdit,
-            'account' => $account,
+        return view('admin/group/list', [
+            'groupList' => $groupList,
             'name' => $name,
-            'code' => $code,
-            'nickname' => $nickname,
-            'phone' => $phone,
-            'email' => $email,
-            'id' => $id,
-            'word' => $isEdit ? '編輯' : '新增'
         ]);
     }
 
-    public function webUserDoEdit()
+    public function groupUserList()
     {
-        $postData = Request::input();
-        $id = Request::input('id', '');
-        $name = Request::input('name', '');
-        $nickname = Request::input('nickname', '');
-        $account = Request::input('account', '');
-        $password = Request::input('password', '');
-        $re_password = Request::input('re_password', '');
-        $email = Request::input('email', '');
-        $code = Request::input('code', '');
-        $phone = Request::input('phone', '');
-        $verification = 'admin_create';
-        $date = date('Y-m-d H:i:s');
-        $ip = Request::getClientIp();
+        $data = Request::input();
 
-        if ($password != '' && $re_password != '') {
-            if ($password != $re_password) {
-                return response()->json([
-                    'status' => 'error',
-                    'msg' => '重複密碼輸入不正確'
-                ]);
-            }
+        $groupId = $data['group_id'] ?? '';
+        $name = $data['name'] ?? '';
 
-            $countPassword = strlen($password);
-
-            if ($countPassword < 6 || $countPassword > 18) {
-                return response()->json([
-                    'status' => 'error',
-                    'msg' => '密碼限制6-18字元'
-                ]);
-            }
+        if ($groupId == '') {
+            return redirect('/admin/bot/group/list');
         }
 
-        if ($id == '') {
-            //create
-            if ($name == '' || $account == '' || $password == '' || $re_password == '' || $code == '' || $phone == '' || $verification == '') {
-                return response()->json([
-                    'status' => 'error',
-                    'msg' => '必填欄位未輸入'
-                ]);
-            }
+        $groupUserList = DB::table('line_group_user')
+            ->where('group_id', $groupId)
+            ->get()
+            ->toArray();
 
-            //掃一遍看是否有欄位亂輸入過長
-            foreach ($postData as $data) {
-                if (strlen($data) > 50) {
-                    return response()->json([
-                        'status' => 'error',
-                        'msg' => '輸入欄位過長'
-                    ]);
-                }
-            }
-
-            if (!preg_match('/^[a-zA-Z0-9]+$/', $account)) {
-                return response()->json([
-                    'status' => 'error',
-                    'msg' => '只允許輸入數字英文'
-                ]);
-            }
-
-            $countAccount = strlen($account);
-
-            if ($countAccount < 4 || $countAccount > 12
-            ) {
-                return response()->json([
-                    'status' => 'error',
-                    'msg' => '帳號限制4-12字元'
-                ]);
-            }
-
-            $check = DB::table('web_users')
-            ->where('account', $account)
-            ->first();
-
-
-            if (!is_null($check)) {
-                return response()->json([
-                    'status' => 'error',
-                    'msg' => '帳號已被使用!'
-                ]);
-            }
-
-            $check = DB::table('web_users')
-            ->where('phone', $phone)
-            ->first();
-
-            if (!is_null($check)) {
-                return response()->json([
-                    'status' => 'error',
-                    'msg' => '電話已被使用!'
-                ]);
-            }
-
-            //insert
-            $insertData = [
-                'name' => $name,
-                'nickname' => $nickname,
-                'account' => $account,
-                'password' => Hash::make($password),
-                'real_password' => $password,
-                'email' => $email,
-                'code' => $code,
-                'phone' => $phone,
-                'created_at' => $date,
-            ];
-
-            try {
-                DB::table('web_users')->insert($insertData);
-            } catch (\Throwable $th) {
-                Log::error($th->getMessage());
-
-                return response()->json([
-                    'status' => 'error',
-                    'msg' => '系統出現錯誤'
-                ]);
-            }
-
-            return response()->json([
-                'status' => 'success',
-            ]);
+        if (empty($groupUserList)) {
+            return redirect('/admin/bot/group/list');
         }
+
+        return view('admin/group/user/list', [
+            'groupUserList' => $groupUserList,
+            'name' => $name,
+        ]);
+    }
+
+    public function groupUserMessage()
+    {
+        $data = Request::input();
+
+        $groupId = $data['group_id'] ?? '';
+        $userId = $data['user_id'] ?? '';
+        $uName = $data['user_name'] ?? '';
+        $gName = $data['group_name'] ?? '';
+        $startDate = $data['start_date'] ?? date('Y-m-d') . ' 00:00:00';
+        $endDate = $data['end_date'] ?? date('Y-m-d') . ' 23:59:59';
+        $uPictureUrl = $data['user_pic_url'] ?? '';
+
+        if ($groupId == '' || $userId == '') {
+            return redirect('/admin/bot/group/list');
+        }
+
+        $groupUserMessage = DB::table('line_user_message')
+            ->where('group_id', $groupId)
+            ->where('user_id', $userId)
+            ->whereBetween(DB::raw('DATE(created_at)'), [$startDate, $endDate])
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->toArray();
+
+        if (empty($groupUserMessage)) {
+            return redirect('/admin/bot/group/list');
+        }
+
+        return view('admin/group/user/message', [
+            'groupUserMessage' => $groupUserMessage,
+            'groupId' => $groupId,
+            'userId' => $userId,
+            'uPictureUrl' => $uPictureUrl,
+            'uName' => $uName,
+            'gName' => $gName,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+        ]);
     }
 
     public function logout()
@@ -430,86 +304,5 @@ class AdminController extends Controller
         Auth::logout();
 
         return redirect('/admin/login');
-    }
-
-    public function settings()
-    {
-        $code = '';
-        $au = '';
-        $iu = '';
-        $du = '';
-        $act = '';
-        $dp = '';
-        $marquee = '';
-        $fileName = '';
-
-        $settings = DB::table('system_setting')
-            ->get()
-            ->first();
-        
-        if (!is_null($settings)) {
-            $code = $settings->default_code;
-            $au = $settings->android_game_download_url;
-            $iu = $settings->ios_game_download_url;
-            $du = $settings->download_teach_url;
-            $act = $settings->activity_url;
-            $marquee = $settings->marquee_word;
-            $fileName = $settings->activity_file_url;
-            $dp = $settings->disabled_phone;
-        }
-
-        return view('admin/settings', [
-            'code' => $code,
-            'au' => $au,
-            'iu' => $iu,
-            'du' => $du,
-            'dp' => $dp,
-            'marquee' => $marquee,
-            'fileName' => $fileName,
-            'act' => $act,
-        ]);
-    }
-
-    public function saveSettings()
-    {
-        $code = Request::input('default_code', '');
-        $au = Request::input('android_game_download_url', '');
-        $iu = Request::input('ios_game_download_url', '');
-        $du = Request::input('download_teach_url', '');
-        $act = Request::input('activity_url', '');
-        $file = Request::file('act_file', '');
-        $dp = Request::input('disabled_phone', '');
-        $marquee = Request::input('marquee_word', '');
-        $date = date('Y-m-d H:i:s');
-        $fileName = '';
-
-        //file
-        if ($file != '') {
-            $fileName = 'activity_upload.jpg';
-            Storage::put('public/activity_upload.jpg', $file->get());
-        }
-
-        $updateData = [
-            'default_code' => $code,
-            'android_game_download_url' => $au,
-            'ios_game_download_url' => $iu,
-            'download_teach_url' => $du,
-            'disabled_phone' => $dp,
-            'activity_url' => $act,
-            'marquee_word' => $marquee,
-            'updated_at' => $date
-        ];
-
-        if ($fileName != '') {
-            $updateData['activity_file_url'] = $fileName;
-        }
-
-        DB::table('system_setting')
-            ->where('id', 1)
-            ->update($updateData);
-
-        return response()->json([
-            'status' => 'success',
-        ]);
     }
 }

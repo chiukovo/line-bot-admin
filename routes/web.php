@@ -29,5 +29,9 @@ Route::group(['middleware' => ['auth']], function () {
     
     Route::post('admin/user/doEdit', 'App\Http\Controllers\AdminController@adminUserDoEdit');
     Route::delete('admin/user/delete', 'App\Http\Controllers\AdminController@adminUserDoDelete');
+
+    Route::get('admin/bot/group/list', 'App\Http\Controllers\AdminController@groupList');
+    Route::get('admin/bot/group/user/list', 'App\Http\Controllers\AdminController@groupUserList');
+    Route::get('admin/bot/group/user/message', 'App\Http\Controllers\AdminController@groupUserMessage');
 });
 
