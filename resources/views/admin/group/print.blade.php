@@ -16,7 +16,7 @@
         </div>
     </div>
 </div>
-<div id="app" class="container-fluid">
+<div id="app" class="container-fluid" v-cloak>
     <div class="row">
         <div class="col-12">
             <div class="text-right m-t-10 m-b-10">

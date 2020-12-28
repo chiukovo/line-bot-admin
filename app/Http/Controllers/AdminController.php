@@ -438,6 +438,21 @@ class AdminController extends Controller
             }
         }
 
+        if (!empty($msgs)) {
+            $issetSring = false;
+
+            foreach($msgs as $msg) {
+                if ($msg['msg'] == $stopString) {
+                    $issetSring = true;
+                }
+            }
+
+            if (!$issetSring) {
+                $msgs = [];
+                $msgIds = [];
+            }
+        }
+
         if (!empty($image) && !empty($msgs)) {
             if (strtotime($imgCreated) > strtotime($msgCreated)) {
                 $result = $msgs;
