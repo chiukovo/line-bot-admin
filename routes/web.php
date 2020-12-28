@@ -33,5 +33,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('admin/bot/group/list', 'App\Http\Controllers\AdminController@groupList');
     Route::get('admin/bot/group/user/list', 'App\Http\Controllers\AdminController@groupUserList');
     Route::get('admin/bot/group/user/message', 'App\Http\Controllers\AdminController@groupUserMessage');
+
+    Route::post('admin/togglePrintSetting', 'App\Http\Controllers\AdminController@togglePrintSetting');
+    Route::get('admin/bot/group/print/get', 'App\Http\Controllers\AdminController@getGroupPrint');
+    Route::get('admin/bot/group/print', 'App\Http\Controllers\AdminController@groupPrint');
+    Route::post('admin/bot/group/print/success', 'App\Http\Controllers\AdminController@groupPrintSuccess');
 });
 

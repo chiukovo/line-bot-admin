@@ -82,12 +82,19 @@ class BotController extends Controller
                     $msgId = $event->getMessageId();
                     $msgType = $event->getMessageType();
                     $type = 0;
+                    $printType = 0;
                     $text = '';
                     $pictureUrl = '';
 
                     if ($msgType == 'text' || $msgType == 'image') {
                         if ($msgType == 'text') {
                             $text = $event->getText();
+                            $text = trim($text);
+                            $firstWd = mb_substr($text, 0, 1);
+
+                            if ($firstWd == '#') {
+                                $printType = 1;
+                            }
                         }
 
                         //圖片
@@ -114,6 +121,7 @@ class BotController extends Controller
                             'group_id' => $groupId,
                             'user_id' => $userId,
                             'type' => $type,
+                            'print_type' => $printType,
                             'msg' => $text,
                             'picture_url' => $pictureUrl == '' ? '' : '/storage' . '/' . $pictureUrl,
                             'created_at' => $dateTime

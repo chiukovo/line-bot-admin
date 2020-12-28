@@ -26,6 +26,7 @@
                                     <th></th>
                                     <th>名稱</th>
                                     <th>群組ID</th>
+                                    <th>影印功能</th>
                                     <th>創建日期</th>
                                     <th>功能</th>
                                 </tr>
@@ -38,8 +39,20 @@
                                     </td>
                                     <td>{{ $list->name }}</td>
                                     <td>{{ $list->group_id }}</td>
+                                    <td>
+                                        @if(!$list->print_open)
+                                        <b class="text-danger">關閉中</b>
+                                        @else
+                                        <b class="text-primary">開啟中</b>
+                                        @endif
+                                    </td>
                                     <td>{{ $list->created_at }}</td>
                                     <td>
+                                        @if(!$list->print_open)
+                                        <button class="btn btn-sm btn-info" onclick="togglePrintSetting('{{ $list->id }}', '1')">開啟影印功能</button>
+                                        @else
+                                        <button class="btn btn-sm btn-danger" onclick="togglePrintSetting('{{ $list->id }}', '0')">關閉影印功能</button>
+                                        @endif
                                         <a class="btn btn-success btn-sm" href="/admin/bot/group/user/list?group_id={{ $list->group_id }}&name={{ $list->name }}">
                                             內容
                                         </a>
@@ -56,7 +69,7 @@
 </div>
 
 <script>
-    $('#updated').click(function () {
+    $('#updated').click(function() {
         $.ajax({
             url: '/updateGroupUserInfo',
             success: function(res) {
@@ -64,5 +77,26 @@
             }
         });
     })
+
+    function togglePrintSetting(id, setting) {
+        $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            url: '/admin/togglePrintSetting',
+            data: {
+                setting: setting,
+                id: id,
+            },
+            type: 'POST',
+            success: function(res) {
+                if (res.status == 'success') {
+                    location.reload();
+                } else {
+                    toastr.warning(res.msg, '訊息');
+                }
+            }
+        });
+    }
 </script>
 @endsection

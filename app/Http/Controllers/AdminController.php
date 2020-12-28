@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LineMessage;
 use Request, Auth, DB, Hash, Storage;
 
 class AdminController extends Controller
@@ -256,6 +257,209 @@ class AdminController extends Controller
         return view('admin/group/user/list', [
             'groupUserList' => $groupUserList,
             'name' => $name,
+        ]);
+    }
+
+    public function togglePrintSetting()
+    {
+        $data = Request::input();
+
+        $setting = (int)$data['setting'] ?? 0;
+        $id = (int)$data['id'] ?? '';
+
+        if ($setting === '' || $id === '') {
+            return response()->json([
+                'status' => 'error',
+                'msg' => '參數錯誤'
+            ]);
+        }
+
+        DB::table('line_group')
+            ->where('id', $id)
+            ->update([
+                'print_open' => $setting
+            ]);
+
+        return response()->json([
+            'status' => 'success',
+        ]);
+    }
+
+    public function groupPrint()
+    {
+        return view('admin/group/print', [
+        ]);
+    }
+
+    public function groupPrintSuccess()
+    {
+        $ids = Request::input('ids', '');
+
+        if ($ids == '') {
+            return response()->json([
+                'status' => 'error',
+                'msg' => '參數為空'
+            ]);
+        }
+
+        try {
+            $decodeIds = decrypt($ids);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'status' => 'error',
+                'msg' => '解密錯誤'
+            ]);
+        }
+
+        if (empty($decodeIds)) {
+            return response()->json([
+                'status' => 'error',
+                'msg' => '參數為空陣列'
+            ]);
+        }
+
+        DB::table('line_user_message')
+            ->whereIn('id', $decodeIds)
+            ->update([
+                'print_type' => 2,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+        return response()->json([
+            'status' => 'success',
+        ]);
+    }
+    
+    public function getGroupPrint()
+    {
+        $data = Request::input();
+        
+        //取出可用群組
+        $groupData = DB::table('line_group')
+            ->where('print_open', 1)
+            ->get(['group_id', 'name'])
+            ->toArray();
+
+        $groupIds = [];
+        $groupIdsName = [];
+
+        foreach ($groupData as $group) {
+            $groupIds[] = $group->group_id;
+            $groupIdsName[$group->group_id] = $group->name;
+        }
+
+        $message = LineMessage::where('print_type', 1)
+            ->join('line_group_user as u', 'line_user_message.user_id', '=', 'u.user_id')
+            ->whereIn('line_user_message.group_id', $groupIds)
+            ->orderBy('line_user_message.created_at', 'asc')
+            ->get([
+                'line_user_message.id as id',
+                'line_user_message.group_id as group_id',
+                'line_user_message.user_id as user_id',
+                'line_user_message.type as type',
+                'line_user_message.print_type as print_type',
+                'line_user_message.msg as msg',
+                'line_user_message.picture_url as m_picture_url',
+                'line_user_message.created_at as created_at',
+                'u.picture_url as u_picture_url',
+                'u.name as u_name',
+            ])
+            ->groupBy('user_id')
+            ->toArray();
+
+        $message = array_values($message);
+
+        //目標
+        $targets = [];
+        $msgs = [];
+        $image = [];
+        $result = [];
+        $ids = [];
+        $imageIds = [];
+        $msgIds = [];
+        $groupName = '';
+        $groupUrl = '';
+        $groupId = '';
+        $userName = '';
+        $userUrl = '';
+        $userInfo = [];
+
+        $imgCreated = '';
+        $msgCreated = '';
+
+        if (!empty($message)) {
+            $targets = $message[0];
+            //中止點
+            $stopString = '#印出';
+
+            //先找圖片
+            foreach($targets as $target) {
+                $groupName = $groupIdsName[$target['group_id']];
+                $groupId = $target['group_id'];
+                $groupUrl = $target['m_picture_url'];
+                $userName = $target['u_name'];
+                $userUrl = $target['u_picture_url'];
+
+                if ($target['type'] == 1) {
+                    $image[] = [
+                        'id' => $target['id'],
+                        'type' => $target['type'],
+                        'picture_url' => $target['m_picture_url'],
+                        'created_at' => $target['created_at'],
+                    ];
+                    $imageIds[] = $target['id'];
+                    $imgCreated = $target['created_at'];
+                    break;
+                }
+            }
+
+            //找訊息
+            foreach ($targets as $target) {
+                if ($target['type'] == 0) {
+                    if ($msgCreated == '') {
+                        $msgCreated = $target['created_at'];
+                    }
+
+                    $msg = trim($target['msg']);
+                    $msgs[] = [
+                        'id' => $target['id'],
+                        'type' => $target['type'],
+                        'msg' => $msg,
+                        'created_at' => $target['created_at'],
+                    ];
+                    $msgIds[] = $target['id'];
+
+                    if ($msg == $stopString) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!empty($image) && !empty($msgs)) {
+            if (strtotime($imgCreated) > strtotime($msgCreated)) {
+                $result = $msgs;
+                $ids = $msgIds;
+            } else {
+                $result = $image;
+                $ids = $imageIds;
+            }
+        } else {
+            $result = empty($image) ? $msgs : $image;
+            $ids = empty($image) ? $msgIds : $imageIds;
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'ids' => encrypt($ids),
+            'groupId' => $groupId,
+            'groupName' => $groupName,
+            'groupUrl' => $groupUrl,
+            'userName' => $userName,
+            'userUrl' => $userUrl,
+            'result' => $result
         ]);
     }
 

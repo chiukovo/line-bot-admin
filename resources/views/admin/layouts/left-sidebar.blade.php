@@ -8,6 +8,9 @@
                 <li class="sidebar-item">
                     <a href="/admin/bot/group/list" class="sidebar-link waves-dark"><i class="mdi mdi-account-multiple"></i><span class="hide-menu">LINE BOT群組列表</span></a>
                 </li>
+                <li class="sidebar-item">
+                    <a href="/admin/bot/group/print" class="sidebar-link waves-dark"><i class="mdi mdi-printer"></i><span class="hide-menu">群組訊息列印</span></a>
+                </li>
             </ul>
         </nav>
     </div>
