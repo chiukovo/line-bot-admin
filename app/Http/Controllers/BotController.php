@@ -100,6 +100,7 @@ class BotController extends Controller
                         //圖片
                         if ($msgType == 'image') {
                             $type = 1;
+                            $printType = 1;
                             $response = $this->lineBot->getMessageContent($msgId);
 
                             if ($response->isSucceeded()) {
