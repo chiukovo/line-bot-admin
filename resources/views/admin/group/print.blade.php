@@ -2,6 +2,17 @@
 
 @section('content')
 
+<style>
+    .seconds {
+        font-size: 32px;
+        color: red;
+    }
+
+    .autoPrint {
+        margin: 0 20px;
+    }
+</style>
+
 <div class="page-breadcrumb">
     <div class="row">
         <div class="col-12 d-flex no-block align-items-center">
@@ -16,12 +27,14 @@
         </div>
     </div>
 </div>
+
 <div id="app" class="container-fluid" v-cloak>
     <div class="row">
         <div class="col-12">
             <div class="text-right m-t-10 m-b-10">
-                <a id="print" href="#" class="btn btn-info">影印</a>
-                <a @click="success" href="#" class="btn btn-success">完成</a>
+                <span class="autoPrint" v-if="autoPrint">自動列印倒數: <b id="seconds" class="seconds">@{{ autoSeconds }}</b></span>
+                <a href="#" class="btn btn-info" @click="doAutoPrint(1)" v-if="!autoPrint">自動列印開啟</a>
+                <a href="#" class="btn btn-danger" @click="doAutoPrint(0)" v-else>自動列印關閉</a>
             </div>
 
             <div class="card">
@@ -63,7 +76,7 @@
             </div>
         </div>
     </div>
-    <pre>
+<pre>
     教學：
     1.需印出字串請打#
     範例: #aaa #我要印出
@@ -74,18 +87,6 @@
 </div>
 
 <script>
-    $(document).ready(function() {
-        $(document).on("click", "#print", function() {
-            let headhtml = "<html><head><title></title></head><body>";
-            let foothtml = "</body>";
-            let newhtml = $("#printContent").html();
-            let oldhtml = document.body.innerHTML;
-            document.body.innerHTML = headhtml + newhtml + foothtml;
-            window.print();
-            document.body.innerHTML = oldhtml;
-        })
-    })
-
     var app = new Vue({
         el: '#app',
         data: {
@@ -96,11 +97,28 @@
             userName: '',
             userUrl: '',
             result: [],
+            autoPrint: false,
+            settingSeconds: 5,
+            autoSeconds: 0,
+            dataSuccess: false,
         },
         mounted: function() {
+            let $this = this
             this.init()
 
-            window.setInterval((() => this.init()), 2000)
+            $this.autoSeconds = $this.settingSeconds
+
+            //倒數
+            window.setInterval(function () {
+                if ($this.autoPrint && $this.ids != '') {
+                    $this.autoSeconds--
+
+                    if ($this.autoSeconds == 0) {
+                        $this.doPrint()
+                        $this.autoSeconds = $this.settingSeconds
+                    }
+                }
+            }, 1000)
         },
         methods: {
             init: function() {
@@ -123,27 +141,45 @@
                     }
                 });
             },
-            success: function(e) {
-                e.preventDefault()
+            doAutoPrint: function (val) {
+                this.autoPrint = val
+                this.autoSeconds = this.settingSeconds
+            },
+            doPrint: function () {
+                let main = document.getElementById('main-wrapper')
+                let targetContent = document.getElementById('print-content-copy')
+                let headhtml = "<html><head><title></title></head><body>"
+                let foothtml = "</body>"
+                let newhtml = $("#printContent").html()
+                let oldhtml = document.body.innerHTML
+
+                targetContent.style.display = "block"
+                main.style.display = "none"
+                targetContent.innerHTML = headhtml + newhtml + foothtml
+                window.print()
+                main.style.display = "block"
+                targetContent.style.display = "none"
+                this.success()
+                this.init()
+            },
+            success: function() {
                 let $this = this
 
-                if (confirm("確定已影印完成？")) {
-                    $.ajax({
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                        url: '/admin/bot/group/print/success',
-                        data: {
-                            ids: $this.ids
-                        },
-                        type: 'POST',
-                        success: function(res) {
-                            if (res.status == 'success') {
-                                $this.init()
-                            }
+                $.ajax({
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    url: '/admin/bot/group/print/success',
+                    data: {
+                        ids: $this.ids
+                    },
+                    type: 'POST',
+                    success: function(res) {
+                        if (res.status == 'success') {
+                            $this.init()
                         }
-                    });
-                }
+                    }
+                })
             }
         }
     })

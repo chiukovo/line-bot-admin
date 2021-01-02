@@ -32,6 +32,7 @@
 </head>
 
 <body>
+  <div id="print-content-copy"></div>
   <div id="main-wrapper">
     <header class="topbar" data-navbarbg="skin5">
       <nav class="navbar top-navbar navbar-expand-md navbar-dark">
