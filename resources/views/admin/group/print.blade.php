@@ -32,7 +32,7 @@
     <div class="row">
         <div class="col-12">
             <div class="text-right m-t-10 m-b-10">
-                <span class="autoPrint" v-if="autoPrint">自動列印倒數: <b id="seconds" class="seconds">@{{ autoSeconds }}</b></span>
+                <span class="autoPrint" v-if="autoPrint">自動列印倒數: <b id="seconds" class="seconds">@{{ ids == '' ? noData : autoSeconds }}</b></span>
                 <a href="#" class="btn btn-info" @click="doAutoPrint(1)" v-if="!autoPrint">自動列印開啟</a>
                 <a href="#" class="btn btn-danger" @click="doAutoPrint(0)" v-else>自動列印關閉</a>
             </div>
@@ -101,15 +101,19 @@
             settingSeconds: 5,
             autoSeconds: 0,
             dataSuccess: false,
+            noData: '無資料',
         },
         mounted: function() {
             let $this = this
-            this.init()
 
             $this.autoSeconds = $this.settingSeconds
 
             //倒數
             window.setInterval(function () {
+                if ($this.autoPrint) {
+                    $this.init()
+                }
+                
                 if ($this.autoPrint && $this.ids != '') {
                     $this.autoSeconds--
 
@@ -144,6 +148,7 @@
             doAutoPrint: function (val) {
                 this.autoPrint = val
                 this.autoSeconds = this.settingSeconds
+                this.init()
             },
             doPrint: function () {
                 let main = document.getElementById('main-wrapper')

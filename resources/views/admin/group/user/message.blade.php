@@ -28,7 +28,6 @@
         <div class="col-12">
             <div class="text-right m-t-10 m-b-10">
                 <a href="#" class="btn btn-info" onclick="location.reload()">重新刷新</a>
-                <a href="#" class="btn btn-danger">前往列印</a>
             </div>
             <div class="card">
                 <div class="card-body">
@@ -54,30 +53,45 @@
                         <table id="zero_config" class="table table-striped table-bordered">
                             <thead>
                                 <tr>
-                                    <th></th>
                                     <th>名稱</th>
                                     <th>內容</th>
+                                    <th>狀態</th>
                                     <th>日期</th>
+                                    <th>功能</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($groupUserMessage as $list)
                                 <tr>
-                                    <td class="checkbox-td" style="text-align: center; width: 10%">
-                                        <input type="checkbox" name="print_id[]" value="{{ $list->id }}">
-                                    </td>
                                     <td style="width: 20%">
                                         <img src="{{ $uPictureUrl }}" alt="" style="width: 100px">
                                         {{ $uName }}
                                     </td>
-                                    <td style="width: 40%">
+                                    <td style="width: 30%">
                                         @if($list->type == 0)
                                         {{ $list->msg }}
                                         @else
                                         <img src="{{ $list->picture_url }}" alt="">
                                         @endif
                                     </td>
+                                    <td style="width: 10%">
+                                        @if($list->print_type == 0)
+                                        <span class="badge badge-secondary">不需影印</span>
+                                        @elseif($list->print_type == 1)
+                                        <span class="badge badge-info">等待列印</span>
+                                        @elseif($list->print_type == 2)
+                                        <span class="badge badge-success">列印完畢</span>
+                                        @endif
+                                    
+                                    </td>
                                     <td style="width: 10%">{{ $list->created_at }}</td>
+                                    <td style="width: 10%">
+                                        @if(($list->msg == '#印出' || $list->type == 1) && $list->print_type == 2)
+                                        <a href="#" class="rePrint btn btn-danger btn-sm" data-id="{{ $list->id }}">
+                                            重新列印
+                                        </a>
+                                        @endif
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -94,16 +108,29 @@
         locale: 'zh-tw',//使用繁體中文界面
         format: 'YYYY-MM-DD HH:mm:ss',//日期時間格式
     });
-    
-    $('.checkbox-td').click(function(e) {
-        e.preventDefault()
-        let target = $(this).find('input[type=checkbox]')
 
-        if (target.prop("checked")) {
-            target.prop("checked", false)
-        } else {
-            target.prop("checked", true)
-        }
-    })
+    $('.rePrint').click(function(e) {
+        e.preventDefault();
+        const id = $(this).attr('data-id')
+
+        $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            url: '/admin/bot/group/rePrint',
+            data: {
+                id, id
+            },
+            type: 'POST',
+            success: function(res) {
+                if (res.status == 'success') {
+                   alert('重新列印設定成功')
+                   location.reload()
+                } else {
+                    alert(res.msg)
+                }
+            }
+        });
+    });
 </script>
 @endsection

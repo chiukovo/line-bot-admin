@@ -332,6 +332,83 @@ class AdminController extends Controller
         ]);
     }
     
+    public function rePrint()
+    {
+        $id = Request::input('id', '');
+        $result = [];
+
+        if ($id == '') {
+            return response()->json([
+                'status' => 'error',
+                'msg' => '參數錯誤'
+            ]);
+        }
+
+        $message = LineMessage::where('id', $id)
+            ->get()
+            ->toArray();
+
+        if (empty($message)) {
+            return redirect('/admin/bot/group/user/message');
+        }
+
+        $message = $message[0];
+
+        if ($message['msg'] != '#印出' && $message['type'] != 1 && $message['print_typ'] != 2) {
+            return response()->json([
+                'status' => 'error',
+                'msg' => '參數錯誤'
+            ]);
+        }
+
+        if ($message['type'] == 0) {
+            $idStart = 0;
+            $idEnd = $id;
+            //文字
+            $findIds = LineMessage::where('msg', 'like', '%印出%')
+                ->where('user_id', $message['user_id'])
+                ->where('group_id', $message['group_id'])
+                ->get(['id'])
+                ->toArray();
+            
+            //找區間
+            foreach ($findIds as $key => $idData) {
+                if ($idData['id'] == $id) {
+                    //找出前一個
+                    if (isset($findIds[$key - 1])) {
+                        $idStart = $findIds[$key - 1]['id'];
+                    }
+                }
+            }
+
+            if ($idStart != 0) {
+                $idStart++;
+            }
+
+            $idRange = range($idStart, $idEnd);
+
+            DB::table('line_user_message')
+                ->where('user_id', $message['user_id'])
+                ->where('group_id', $message['group_id'])
+                ->whereIn('id', $idRange)
+                ->where('type', 0)
+                ->where('msg', 'like', '%#%')
+                ->update([
+                    'print_type' => 1
+                ]);
+        } else {
+            DB::table('line_user_message')
+                ->where('id', $id)
+                ->update([
+                    'print_type' => 1
+                ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+        ]);
+    }
+
     public function getGroupPrint()
     {
         $data = Request::input();
@@ -468,7 +545,7 @@ class AdminController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'ids' => encrypt($ids),
+            'ids' => empty($ids) ? '' : encrypt($ids),
             'groupId' => $groupId,
             'groupName' => $groupName,
             'groupUrl' => $groupUrl,
@@ -497,7 +574,7 @@ class AdminController extends Controller
         $groupUserMessage = DB::table('line_user_message')
             ->where('group_id', $groupId)
             ->where('user_id', $userId)
-            ->whereBetween(DB::raw('DATE(created_at)'), [$startDate, $endDate])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->orderBy('created_at', 'asc')
             ->get()
             ->toArray();
