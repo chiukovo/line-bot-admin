@@ -468,17 +468,25 @@ class AdminController extends Controller
 
         if (!empty($message)) {
             $targets = $message[0];
+
+            //去除重複
+            $checkIds = [];
+
+            foreach ($targets as $key => $data) {
+                if (!in_array($data['id'], $checkIds)) {
+                    $checkIds[] = $data['id'];
+                } else {
+                    unset($targets[$key]);
+                }
+            }
+
+            $targets = array_values($targets);
+
             //中止點
             $stopString = '#印出';
 
             //先找圖片
             foreach($targets as $target) {
-                $groupName = $groupIdsName[$target['group_id']];
-                $groupId = $target['group_id'];
-                $groupUrl = $target['m_picture_url'];
-                $userName = $target['u_name'];
-                $userUrl = $target['u_picture_url'];
-
                 if ($target['type'] == 1) {
                     $image[] = [
                         'id' => $target['id'],
@@ -488,6 +496,11 @@ class AdminController extends Controller
                     ];
                     $imageIds[] = $target['id'];
                     $imgCreated = $target['created_at'];
+                    $groupName = $groupIdsName[$target['group_id']];
+                    $groupId = $target['group_id'];
+                    $groupUrl = $target['m_picture_url'];
+                    $userName = $target['u_name'];
+                    $userUrl = $target['u_picture_url'];
                     break;
                 }
             }
@@ -507,6 +520,11 @@ class AdminController extends Controller
                         'created_at' => $target['created_at'],
                     ];
                     $msgIds[] = $target['id'];
+                    $groupName = $groupIdsName[$target['group_id']];
+                    $groupId = $target['group_id'];
+                    $groupUrl = $target['m_picture_url'];
+                    $userName = $target['u_name'];
+                    $userUrl = $target['u_picture_url'];
 
                     if ($msg == $stopString) {
                         break;
