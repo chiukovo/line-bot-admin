@@ -106,6 +106,7 @@
         mounted: function() {
             let $this = this
 
+            $this.init()
             $this.autoSeconds = $this.settingSeconds
 
             //倒數
