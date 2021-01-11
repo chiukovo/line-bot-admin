@@ -58,7 +58,7 @@
                                     <td>
                                         <span v-if="list.type == 0">@{{ list.msg }}</span>
                                         <span v-else>
-                                            <img :src="list.picture_url" style="width: 300px">
+                                            <img :src="list.picture_url" style="width: 600px">
                                         </span>
 
                                     </td>
