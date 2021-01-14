@@ -97,6 +97,11 @@ class BotController extends Controller
                             if ($firstWd == '#') {
                                 $printType = 1;
                             }
+
+                            if ($text == '#印出') {
+                                //reply
+                                $this->doSendMsg($replyToken, 'OK!');
+                            }
                         }
 
                         //圖片
@@ -117,12 +122,7 @@ class BotController extends Controller
                                 Storage::put('public/' . $pictureUrl, $imgContent);
 
                                 //reply
-                                $reply = $this->lineBot->replyMessage($replyToken, new TextMessageBuilder('OK!'));
-
-                                //error
-                                if (!$reply->isSucceeded()) {
-                                    Log::debug($reply->getRawBody());
-                                }
+                                $this->doSendMsg($replyToken, 'OK!');
                             }
                         }
 
@@ -235,6 +235,17 @@ class BotController extends Controller
 
         } else {
             Log::debug($groupSummary->getRawBody());
+        }
+    }
+
+    public function doSendMsg($replyToken, $msg)
+    {
+        //reply
+        $reply = $this->lineBot->replyMessage($replyToken, new TextMessageBuilder($msg));
+
+        //error
+        if (!$reply->isSucceeded()) {
+            Log::debug($reply->getRawBody());
         }
     }
 }
