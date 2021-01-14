@@ -12,6 +12,7 @@ use LINE\LINEBot\Event\LeaveEvent;
 use LINE\LINEBot\Event\MemberJoinEvent;
 use LINE\LINEBot\HTTPClient\CurlHTTPClient;
 use Illuminate\Http\Request;
+use LINE\LINEBot\MessageBuilder\TextMessageBuilder;
 use Intervention\Image\ImageManagerStatic as Image;
 use Log, Storage, DB;
 
@@ -81,6 +82,7 @@ class BotController extends Controller
                 if ($event instanceof MessageEvent) {
                     $msgId = $event->getMessageId();
                     $msgType = $event->getMessageType();
+                    $replyToken = $event->getReplyToken();
                     $type = 0;
                     $printType = 0;
                     $text = '';
@@ -113,6 +115,14 @@ class BotController extends Controller
                                 $pictureUrl = $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '.jpg';
                                 
                                 Storage::put('public/' . $pictureUrl, $imgContent);
+
+                                //reply
+                                $reply = $this->lineBot->replyMessage($replyToken, new TextMessageBuilder('OK!'));
+
+                                //error
+                                if (!$reply->isSucceeded()) {
+                                    Log::debug($reply->getRawBody());
+                                }
                             }
                         }
 
