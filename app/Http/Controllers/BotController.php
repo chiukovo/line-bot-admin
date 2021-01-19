@@ -109,6 +109,7 @@ class BotController extends Controller
                             $type = 1;
                             $printType = 1;
                             $response = $this->lineBot->getMessageContent($msgId);
+                            Log::info($msgType);
 
                             if ($response->isSucceeded()) {
                                 $content = $response->getRawBody();
@@ -117,7 +118,7 @@ class BotController extends Controller
                                     $constraint->aspectRatio();
                                 })->encode('jpg', 80);
 
-                                $pictureUrl = $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '.jpg';
+                                $pictureUrl = $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '_' . $msgId . '.jpg';
                                 
                                 Storage::put('public/' . $pictureUrl, $imgContent);
 
