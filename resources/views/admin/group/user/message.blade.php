@@ -71,7 +71,7 @@
                                         @if($list->type == 0)
                                         {{ $list->msg }}
                                         @else
-                                        <img src="{{ $list->picture_url }}" alt="">
+                                        <img src="{{ $list->picture_url }}" alt="" style="width: 300px">
                                         @endif
                                     </td>
                                     <td style="width: 10%">
