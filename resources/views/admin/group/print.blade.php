@@ -98,7 +98,7 @@
             userUrl: '',
             result: [],
             autoPrint: false,
-            settingSeconds: 2,
+            settingSeconds: 3,
             autoSeconds: 0,
             dataSuccess: false,
             noData: '無資料',
