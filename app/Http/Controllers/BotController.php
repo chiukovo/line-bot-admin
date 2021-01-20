@@ -116,7 +116,7 @@ class BotController extends Controller
 
                                 $imgContent = Image::make($content)->resize(400, null, function ($constraint) {
                                     $constraint->aspectRatio();
-                                })->encode('jpg', 80);
+                                })->encode('jpg', 90);
 
                                 $pictureUrl = $date . '/' . $groupId . '/' . $userId . '/' . strtotime($dateTime) . '_' . $msgId . '.jpg';
                                 
