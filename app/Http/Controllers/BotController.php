@@ -114,7 +114,7 @@ class BotController extends Controller
                             if ($response->isSucceeded()) {
                                 $content = $response->getRawBody();
 
-                                $imgContent = Image::make($content)->resize(400, null, function ($constraint) {
+                                $imgContent = Image::make($content)->resize(700, null, function ($constraint) {
                                     $constraint->aspectRatio();
                                 })->encode('jpg', 90);
 
