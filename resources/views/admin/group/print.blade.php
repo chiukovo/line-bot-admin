@@ -179,7 +179,7 @@
                 window.print()
                 main.style.display = "block"
                 targetContent.style.display = "none"
-                //this.success()
+                this.success()
                 this.init()
             },
             success: function() {
