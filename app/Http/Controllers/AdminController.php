@@ -431,6 +431,7 @@ class AdminController extends Controller
             ->join('line_group_user as u', 'line_user_message.user_id', '=', 'u.user_id')
             ->whereIn('line_user_message.group_id', $groupIds)
             ->orderBy('line_user_message.created_at', 'asc')
+            ->limit(10)
             ->get([
                 'line_user_message.id as id',
                 'line_user_message.group_id as group_id',
@@ -443,132 +444,33 @@ class AdminController extends Controller
                 'u.picture_url as u_picture_url',
                 'u.name as u_name',
             ])
-            ->groupBy('user_id')
             ->toArray();
 
-        $message = array_values($message);
-
-        //目標
-        $targets = [];
-        $msgs = [];
-        $image = [];
+        $messages = array_values($message);
         $result = [];
         $ids = [];
-        $imageIds = [];
-        $msgIds = [];
-        $groupName = '';
-        $groupUrl = '';
-        $groupId = '';
-        $userName = '';
-        $userUrl = '';
-        $userInfo = [];
+        
+        foreach($messages as $message) {
+            $ids[] = $message['id'];
 
-        $imgCreated = '';
-        $msgCreated = '';
-
-        if (!empty($message)) {
-            $targets = $message[0];
-
-            //去除重複
-            $checkIds = [];
-
-            foreach ($targets as $key => $data) {
-                if (!in_array($data['id'], $checkIds)) {
-                    $checkIds[] = $data['id'];
-                } else {
-                    unset($targets[$key]);
-                }
-            }
-
-            $targets = array_values($targets);
-
-            //中止點
-            $stopString = '#印出';
-
-            //先找圖片
-            foreach($targets as $target) {
-                if ($target['type'] == 1) {
-                    $image[] = [
-                        'id' => $target['id'],
-                        'type' => $target['type'],
-                        'picture_url' => $target['m_picture_url'],
-                        'created_at' => $target['created_at'],
-                    ];
-                    $imageIds[] = $target['id'];
-                    $imgCreated = $target['created_at'];
-                    $groupName = $groupIdsName[$target['group_id']];
-                    $groupId = $target['group_id'];
-                    $groupUrl = $target['m_picture_url'];
-                    $userName = $target['u_name'];
-                    $userUrl = $target['u_picture_url'];
-                    break;
-                }
-            }
-
-            //找訊息
-            foreach ($targets as $target) {
-                if ($target['type'] == 0) {
-                    if ($msgCreated == '') {
-                        $msgCreated = $target['created_at'];
-                    }
-
-                    $msg = trim($target['msg']);
-                    $msgs[] = [
-                        'id' => $target['id'],
-                        'type' => $target['type'],
-                        'msg' => $msg,
-                        'created_at' => $target['created_at'],
-                    ];
-                    $msgIds[] = $target['id'];
-                    $groupName = $groupIdsName[$target['group_id']];
-                    $groupId = $target['group_id'];
-                    $groupUrl = $target['m_picture_url'];
-                    $userName = $target['u_name'];
-                    $userUrl = $target['u_picture_url'];
-
-                    if ($msg == $stopString) {
-                        break;
-                    }
-                }
-            }
+            $result[$message['id']] = [
+                'id' => $message['id'],
+                'type' => $message['type'],
+                'msg' => $message['msg'],
+                'u_name' => $message['u_name'],
+                'group_name' => $groupIdsName[$message['group_id']],
+                'm_picture_url' => $message['m_picture_url'],
+                'u_picture_url' => $message['u_picture_url'],
+                'created_at' => $message['created_at'],
+            ];
         }
 
-        if (!empty($msgs)) {
-            $issetSring = false;
-
-            foreach($msgs as $msg) {
-                if ($msg['msg'] == $stopString) {
-                    $issetSring = true;
-                }
-            }
-
-            if (!$issetSring) {
-                $msgs = [];
-                $msgIds = [];
-            }
-        }
-
-        if (!empty($image) && !empty($msgs)) {
-            if (strtotime($imgCreated) > strtotime($msgCreated)) {
-                $result = $msgs;
-                $ids = $msgIds;
-            } else {
-                $result = $image;
-                $ids = $imageIds;
-            }
-        } else {
-            $result = empty($image) ? $msgs : $image;
-            $ids = empty($image) ? $msgIds : $imageIds;
-        }
+        $ids = array_unique($ids);
+        $result = array_values($result);
 
         return response()->json([
             'status' => 'success',
             'ids' => empty($ids) ? '' : encrypt($ids),
-            'groupId' => $groupId,
-            'groupName' => $groupName,
-            'groupUrl' => $groupUrl,
-            'userName' => $userName,
-            'userUrl' => $userUrl,
             'result' => $result
         ]);
     }

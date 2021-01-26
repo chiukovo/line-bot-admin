@@ -92,13 +92,10 @@ class BotController extends Controller
                         if ($msgType == 'text') {
                             $text = $event->getText();
                             $text = trim($text);
-                            $firstWd = mb_substr($text, 0, 1);
 
-                            if ($firstWd == '#') {
+                            if (strstr($text, '印出')) {
                                 $printType = 1;
-                            }
-
-                            if ($text == '#印出') {
+                                
                                 //reply
                                 $this->doSendMsg($replyToken, 'OK!');
                             }

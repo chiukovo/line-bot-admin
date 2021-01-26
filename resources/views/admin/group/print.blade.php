@@ -3,6 +3,14 @@
 @section('content')
 
 <style>
+    .card {
+        margin-bottom: 130px;
+    }
+
+    .card:last-child {
+        margin-bottom: 20px;
+    }
+
     .seconds {
         font-size: 32px;
         color: red;
@@ -10,6 +18,24 @@
 
     .autoPrint {
         margin: 0 20px;
+    }
+
+    .word-pre {
+        width: 640px;
+        position: relative;
+        left: 5%;
+        font-size: 28px;
+        border: none;
+        white-space: pre-wrap;
+        /* css-3 */
+        white-space: -moz-pre-wrap;
+        /* Mozilla, since 1999 */
+        white-space: -pre-wrap;
+        /* Opera 4-6 */
+        white-space: -o-pre-wrap;
+        /* Opera 7 */
+        word-wrap: break-word;
+        /* Internet Explorer 5.5+ */
     }
 </style>
 
@@ -36,53 +62,51 @@
                 <a href="#" class="btn btn-info" @click="doAutoPrint(1)" v-if="!autoPrint">自動列印開啟</a>
                 <a href="#" class="btn btn-danger" @click="doAutoPrint(0)" v-else>自動列印關閉</a>
             </div>
-
-            <div class="card">
-                <div id="printContent" class="card-body">
-                    <h2 class="card-title">@{{ groupName }}</h2>
-                    <div class="table-responsive">
-                        <table id="zero_config" class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th width="20%">名稱</th>
-                                    <th width="60%">內容</th>
-                                    <th width="20%">時間</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="list in result">
-                                    <td>
-                                        <img :src="userUrl" style="width: 50px">
-                                        @{{ userName }}
-                                    </td>
-                                    <td>
-                                        <span v-if="list.type == 0">@{{ list.msg }}</span>
-                                        <span v-else>
-                                            <img :src="list.picture_url" style="width: 700px;height: 1244px;">
-                                        </span>
-
-                                    </td>
-                                    <td>@{{ list.created_at }}</td>
-                                </tr>
-                                <tr v-if="result.length == 0">
-                                    <td colspan="3" style="text-align: center;">
-                                        尚無任何需印出資料
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+            <div id="printContent">
+                <div class="card" v-for="list in result">
+                    <div class="card-body">
+                        <h2 class="card-title">群組名稱: <b>@{{ list.group_name }}</b></h2>
+                        <div class="table-responsive">
+                            <table id="zero_config" class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th width="20%">名稱</th>
+                                        <th width="60%">內容</th>
+                                        <th width="20%">時間</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <img :src="list.u_picture_url" style="width: 50px">
+                                            @{{ list.u_name }}
+                                        </td>
+                                        <td>
+                                            <div style="width: 700px;height: 1244px;display: flex;align-items: center;">
+                                                <pre class="word-pre" v-if="list.type == 0" v-html="list.msg">
+                                                    @{{ list.msg }}
+                                                </pre>
+                                                <span v-else>
+                                                    <img :src="list.m_picture_url" style="width: 700px;height: 1244px;">
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>@{{ list.created_at }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-<pre>
+    <pre>
     教學：
-    1.需印出字串請打#
-    範例: #aaa #我要印出
+    1.只要有圖片皆會印出
 
-    2.印出指令
-    輸入: #印出
+    2.印出文字 (只要文字裡有印出兩個字 皆會印出)
+    範例: 威力彩 xx000 123 印出 
 </pre>
 </div>
 
@@ -91,14 +115,9 @@
         el: '#app',
         data: {
             ids: '',
-            groupId: '',
-            groupName: '',
-            groupUrl: '',
-            userName: '',
-            userUrl: '',
             result: [],
             autoPrint: false,
-            settingSeconds: 3,
+            settingSeconds: 5,
             autoSeconds: 0,
             dataSuccess: false,
             noData: '無資料',
@@ -110,11 +129,11 @@
             $this.autoSeconds = $this.settingSeconds
 
             //倒數
-            window.setInterval(function () {
+            window.setInterval(function() {
                 if ($this.autoPrint) {
                     $this.init()
                 }
-                
+
                 if ($this.autoPrint && $this.ids != '') {
                     $this.autoSeconds--
 
@@ -136,22 +155,17 @@
                     success: function(res) {
                         if (res.status == 'success') {
                             $this.ids = res.ids
-                            $this.groupId = res.groupId
-                            $this.groupName = res.groupName
-                            $this.groupUrl = res.groupUrl
-                            $this.userName = res.userName
-                            $this.userUrl = res.userUrl
                             $this.result = res.result
                         }
                     }
                 });
             },
-            doAutoPrint: function (val) {
+            doAutoPrint: function(val) {
                 this.autoPrint = val
                 this.autoSeconds = this.settingSeconds
                 this.init()
             },
-            doPrint: function () {
+            doPrint: function() {
                 let main = document.getElementById('main-wrapper')
                 let targetContent = document.getElementById('print-content-copy')
                 let headhtml = "<html><head><title></title></head><body>"
@@ -165,7 +179,7 @@
                 window.print()
                 main.style.display = "block"
                 targetContent.style.display = "none"
-                this.success()
+                //this.success()
                 this.init()
             },
             success: function() {
